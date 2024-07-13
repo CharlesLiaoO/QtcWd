@@ -62,3 +62,13 @@ void SendShortCutToFocusWin(QString keySeq)
 }
 
 #endif
+
+#ifdef Q_OS_LINUX
+
+void SendShortCutToFocusWin(QString keySeq)
+{
+    QString cmd = "xdotool key " + keySeq;
+    system(cmd.toUtf8().constData());
+}
+
+#endif

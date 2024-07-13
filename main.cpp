@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     QString projectDir = QDir::fromNativeSeparators(argv[1]);
     QThread::msleep(1000);  // wait for qtc to save the current project config
     ModifyProjectConfig(projectDir);
-    ReopenProject(projectDir);
+    ReopenProject(projectDir);  // the parent proceess is debugger when debugging
 
     return 0;
 }

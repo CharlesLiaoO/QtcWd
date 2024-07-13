@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include <QFile>
 #include <QRegularExpression>
+#include <QProcess>
 
 void CloseCurrentProject()
 {
@@ -23,7 +24,14 @@ void CloseCurrentProject()
 
 QString GetQtcShortcut(QString key)
 {
+#ifdef Q_OS_WIN
+    // C:\Users\user\AppData\Roaming\QtProject\QtCreator.ini
     QString qtcIniPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/QtProject/QtCreator.ini";
+#endif
+#ifdef Q_OS_LINUX
+    // /home/user/.config/QtProject/QtCreator.ini
+    QString qtcIniPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation) + "/QtProject/QtCreator.ini";
+#endif
     QSettings qtcCfg(qtcIniPath, QSettings::IniFormat);
 
     qtcCfg.beginGroup("KeyboardShortcuts");
@@ -72,8 +80,14 @@ void ModifyProjectConfig(QString projectDir)
 
 void ReopenProject(QString projectDir)
 {
-    // C:\Qt\qtcreator-13.0.2\bin\qtcreator.exe -pid 4948 D:\01_EmbeddedSystem\RemoteControl
-    int ppid = GetParentProcessID();
+    // C:\Qt\qtcreator-13.0.2\bin\qtcreator.exe -pid 4948 ProojecctDir
+#ifdef Q_OS_WIN
+    uint ppid = GetParentProcessID();
+#endif
+#ifdef Q_OS_LINUX
+    uint ppid = GetParentProcessID();
+    ppid = GetParentProcessID(ppid);  // qtcreator -> qtcreator_processlauncher -> external tools
+#endif
     QString qtcPath = GetProcessExePath(ppid);
     // QString qtcPath = R"(C:\Qt\qtcreator-13.0.2\bin\qtcreator.exe)";
     QString qtcPid = QString("-pid %1").arg(ppid);
@@ -83,5 +97,6 @@ void ReopenProject(QString projectDir)
     cmdArgs<< qtcPath<< qtcPid<< projectDir;
     QString cmd = cmdArgs.join(" ");
     qInfo()<< __FUNCTION__<< "cmd: "<< cmd;
-    system(cmd.toStdString().c_str());
+    QProcess prc;
+    prc.startDetached(cmd);
 }

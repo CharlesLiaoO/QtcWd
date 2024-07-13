@@ -25,10 +25,13 @@ A tool can quickly set the working directory of project's program running from Q
 3. Add a new working directory config `<value type="QString" key="RunConfiguration.WorkingDirectory">path to the project</value>` after the default config `<value type="QString" key="RunConfiguration.WorkingDirectory.default">`
 4. Reopen the project.
 
-## Build
-Tested build config:
+## Build and run environment:
+Tested run in:
+- Qtc 13.0.2. Known issue: Qtc 13.0.2 in linux mint: cannot open project to current qtc (attach to specific pid)
+
+Tested build environment:
 - Windows: Qt 5.12.12 MSVC2017 32bit. Not supported by Qt 5.12.12 MinWG 7.3 because this MinWG does not implement the used API `GetModuleFileNameEx`.
-- Linux: in progress...
+- Linux: Qt 5.12.12 gcc 64bit.
 
 ## Other
 I had summitted a suggestion (QTCREATORBUG-29798) for setting the default working directory in Qtc to Qt's bug report system, but there has been no progress for a long time. So, I made this tool to achieve a similar purpose by this simple way.
