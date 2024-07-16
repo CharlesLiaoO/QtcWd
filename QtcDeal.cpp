@@ -81,13 +81,9 @@ void ModifyProjectConfig(QString projectDir)
 void ReopenProject(QString projectDir)
 {
     // C:\Qt\qtcreator-13.0.2\bin\qtcreator.exe -pid 4948 ProojecctDir
-#ifdef Q_OS_WIN
-    uint ppid = GetParentProcessID();
-#endif
-#ifdef Q_OS_LINUX
-    uint ppid = GetParentProcessID();
-    ppid = GetParentProcessID(ppid);  // qtcreator -> qtcreator_processlauncher -> external tools
-#endif
+    uint ppid = GetParentProcessID();  // qtc 13.0.2's process tree: qtcreator -> external tools
+    // ppid = GetParentProcessID(ppid);  // qtc 12.0.2's process tree: qtcreator -> qtcreator_processlauncher -> external tools
+
     QString qtcPath = GetProcessExePath(ppid);
     // QString qtcPath = R"(C:\Qt\qtcreator-13.0.2\bin\qtcreator.exe)";
     QString qtcPid = QString("-pid %1").arg(ppid);

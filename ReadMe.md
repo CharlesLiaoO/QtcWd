@@ -27,7 +27,8 @@ A tool can quickly set the working directory of project's program running from Q
 
 ## Build and run environment:
 Tested run in:
-- Qtc 13.0.2. Known issue: Qtc 13.0.2 in linux mint: cannot open project to current qtc (attach to specific pid)
+- Qtc 13.0.2. OK.
+- Qtc 12.0.2. Need to modify the code (just search "12.0.2" in project). Known issue: Qtc 12.0.2 in linux mint: cannot open project to current qtc (attach to specific pid)
 
 Tested build environment:
 - Windows: Qt 5.12.12 MSVC2017 32bit. Not supported by Qt 5.12.12 MinWG 7.3 because this MinWG does not implement the used API `GetModuleFileNameEx`.
