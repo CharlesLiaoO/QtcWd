@@ -16,7 +16,9 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+#ifndef QT_DEBUG
     CloseCurrentProject();
+#endif
     QString projectDir = QDir::fromNativeSeparators(argv[1]);
     QThread::msleep(1000);  // wait for qtc to save the current project config
     ModifyProjectConfig(projectDir);

@@ -52,6 +52,13 @@ void ModifyProjectConfig(QString projectDir)
 
     QStringList sFileNames = dir.entryList({"*.pro.user", "CMakeLists.txt.user"});
     static QRegularExpression regWdd(R"(\s*<value type="QString" key="RunConfiguration.WorkingDirectory.default">)");
+    static QString ssBd(R"(<value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">)");
+    static int keySuffixSize = QByteArray("</value>").size();
+#ifdef Q_OS_WIN
+    keySuffixSize += 2;  // \r\n
+#else
+    keySuffixSize += 1;  // \n
+#endif
 
     for (auto &sFileName : sFileNames) {
         QFile fCfg(dir.filePath(sFileName));
@@ -69,6 +76,37 @@ void ModifyProjectConfig(QString projectDir)
                 addLine += projectDir + "/bin";
                 addLine += "</value>";
                 sFileContent += addLine + "\n";
+            } else if (int idxKey = sLine.indexOf(ssBd); idxKey > 0) {
+                sLine = QDir::fromNativeSeparators(sLine);
+
+                int idxDir = idxKey + ssBd.size();
+                int idxFolder = sLine.indexOf("/build-", idxDir);
+
+                if (idxFolder != -1) {
+                    auto curBuildDirPrefix = sLine.mid(idxDir, idxFolder - idxDir);
+                    if (curBuildDirPrefix == projectDir) {
+                        continue;
+                    }
+                }
+
+                int dirLength = sLine.size() - idxDir - keySuffixSize;
+                auto curBuildDir = sLine.mid(idxDir, dirLength);
+                if (curBuildDir != projectDir) {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+                    QFile::moveToTrash(curBuildDir);
+#else
+                    QFile::rename(curBuildDir, curBuildDir+"--del");
+                    // QDir(curBuildDir).removeRecursively();  // don't remove permanently for safety
+#endif
+                }
+
+                if (idxFolder != -1) {
+                    // replace curBuildDirPrefix
+                    sLine.replace(idxDir, idxFolder - idxDir, projectDir);
+                } else {
+                    // replace curBuildDir with projectDir and rand path
+                    sLine.replace(idxDir, dirLength, projectDir + QString("/build-%1").arg(rand()));
+                }
             }
             sFileContent += sLine;
         }
