@@ -52,13 +52,7 @@ void ModifyProjectConfig(QString projectDir)
 
     QStringList sFileNames = dir.entryList({"*.pro.user", "CMakeLists.txt.user"});
     static QRegularExpression regWdd(R"(\s*<value type="QString" key="RunConfiguration.WorkingDirectory.default">)");
-    static QString ssBd(R"(<value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">)");
-    static int keySuffixSize = QByteArray("</value>").size();
-#ifdef Q_OS_WIN
-    keySuffixSize += 2;  // \r\n
-#else
-    keySuffixSize += 1;  // \n
-#endif
+    QString ssBd(R"(<value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">)");
 
     for (auto &sFileName : sFileNames) {
         QFile fCfg(dir.filePath(sFileName));
@@ -77,42 +71,57 @@ void ModifyProjectConfig(QString projectDir)
                 addLine += "</value>";
                 sFileContent += addLine + "\n";
             } else if (int idxKey = sLine.indexOf(ssBd); idxKey > 0) {
-                sLine = QDir::fromNativeSeparators(sLine);
-
-                int idxDir = idxKey + ssBd.size();
-                int idxFolder = sLine.indexOf("/build-", idxDir);
-
-                if (idxFolder != -1) {
-                    auto curBuildDirPrefix = sLine.mid(idxDir, idxFolder - idxDir);
-                    if (curBuildDirPrefix == projectDir) {
-                        continue;
-                    }
-                }
-
-                int dirLength = sLine.size() - idxDir - keySuffixSize;
-                auto curBuildDir = sLine.mid(idxDir, dirLength);
-                if (curBuildDir != projectDir) {
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-                    QFile::moveToTrash(curBuildDir);
-#else
-                    QFile::rename(curBuildDir, curBuildDir+"--del");
-                    // QDir(curBuildDir).removeRecursively();  // don't remove permanently for safety
-#endif
-                }
-
-                if (idxFolder != -1) {
-                    // replace curBuildDirPrefix
-                    sLine.replace(idxDir, idxFolder - idxDir, projectDir);
-                } else {
-                    // replace curBuildDir with projectDir and rand path
-                    sLine.replace(idxDir, dirLength, projectDir + QString("/build-%1").arg(rand()));
-                }
+                ModifyProjectConfig_BD(projectDir, sLine, idxKey, ssBd);
             }
             sFileContent += sLine;
         }
 
         fCfg.seek(0);
         fCfg.write(sFileContent.toUtf8());
+        // for test
+        // QFile fNew(fCfg.fileName() + ".txt");
+        // if (fNew.open(QFile::WriteOnly | QFile::Truncate))
+        //     fNew.write(sFileContent.toUtf8());
+    }
+}
+
+void ModifyProjectConfig_BD(const QString &projectDir, QString &sLine, int idxKey, const QString &ssBd)
+{
+#ifdef Q_OS_WIN
+    static int keySuffixSize = QByteArray("</value>").size() + 2;  // +2: \r\n
+#else
+    static int keySuffixSize = QByteArray("</value>").size() + 1;  // +1: \n
+#endif
+
+    sLine = QDir::fromNativeSeparators(sLine);
+
+    int idxDir = idxKey + ssBd.size();
+    int idxFolder = sLine.indexOf("/build-", idxDir);
+
+    if (idxFolder != -1) {
+        auto curBuildDirPrefix = sLine.mid(idxDir, idxFolder - idxDir);
+        if (curBuildDirPrefix == projectDir) {
+            return;
+        }
+    }
+
+    int dirLength = sLine.size() - idxDir - keySuffixSize;
+    auto curBuildDir = sLine.mid(idxDir, dirLength);
+    if (curBuildDir != projectDir) {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+        QFile::moveToTrash(curBuildDir);
+#else
+        QFile::rename(curBuildDir, curBuildDir+"--del");
+        // QDir(curBuildDir).removeRecursively();  // don't remove permanently for safety
+#endif
+    }
+
+    if (idxFolder != -1) {
+        // replace curBuildDirPrefix
+        sLine.replace(idxDir, idxFolder - idxDir, projectDir);
+    } else {
+        // replace curBuildDir with projectDir and rand path
+        sLine.replace(idxDir, dirLength, projectDir + QString("/build-%1").arg(rand()));
     }
 }
 
