@@ -50,7 +50,7 @@ void ModifyProjectConfig(QString projectDir)
     QDir dir(projectDir);
     dir.mkpath(projectDir + "/bin");
 
-    QStringList sFileNames = dir.entryList({"*.pro.user", "CMakeList.txt.user"});
+    QStringList sFileNames = dir.entryList({"*.pro.user", "CMakeLists.txt.user"});
     static QRegularExpression regWdd(R"(\s*<value type="QString" key="RunConfiguration.WorkingDirectory.default">)");
 
     for (auto &sFileName : sFileNames) {
