@@ -10,7 +10,9 @@ A tool can quickly set the working directory of project's program running from Q
 - set Arguments to the variable of Qtc specifying the project directory of current document (`%{CurrentDocument:Project:Path}`).
 ![alt text](doc/image_ExteranlTools.png)
 
-3. (Optional) After step 2, you need to click Apply or OK button to validate your external tool config. Then, you can set a useful shortcut to the external tool "QtcWd" to speed up your work.
+3. Linux: install 'xdotool' for simulating keyboard event. In Debian or it's derivatives, you can use `sudo apt install xdotool`.
+
+4. (Optional) After step 2, you need to click Apply or OK button to validate your external tool config. Then, you can set a useful shortcut to the external tool "QtcWd" to speed up your work.
 
 ## Usage - running
 1. Open the project config file (*.pro / CMakeLists.txt) or other file of the project you want to set the working directory. Make sure the opened file is focused as Current, by mouse or keyboard.
